@@ -1,0 +1,23 @@
+# name: test/sql/dht.test
+# description: test dht extension
+# group: [dht]
+
+# Before we load the extension, this will fail
+statement error
+SELECT dht('Sam');
+----
+Catalog Error: Scalar Function with name dht does not exist!
+
+# Require statement will ensure this test is run with this extension loaded
+require dht
+
+# Confirm the extension works
+query I
+SELECT dht('Sam');
+----
+Dht Sam 🐥
+
+query I
+SELECT dht_openssl_version('Michael') ILIKE 'Dht Michael, my linked OpenSSL version is OpenSSL%';
+----
+true
