@@ -19,8 +19,15 @@
 
 namespace duckdb {
 
-// Default path to dhtd Unix socket
-static const char* DEFAULT_DHTD_SOCKET = "/tmp/dhtd.sock";
+static std::string GetDhtdSocketPath() {
+    const char* env_socket = std::getenv("DUCKDB_DHTD_SOCKET");
+    if (env_socket != nullptr && strlen(env_socket) > 0) {
+        return std::string(env_socket);
+    }
+    return "/tmp/dhtd.sock";
+}
+
+static const char* DEFAULT_DHTD_SOCKET = GetDhtdSocketPath();
 
 // Function to compute SHA-256 hash of input using modern OpenSSL API
 static std::string ComputeSHA256(const std::string& input) {
