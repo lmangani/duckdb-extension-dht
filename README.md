@@ -8,13 +8,14 @@ This extension provides **DuckDB** instances access to mainline **DHT**.<br>
 
 ### Usage
 
-Start a local DHT Node instance with [dhtd](https://github.com/mwarning/dhtd)
+Start a local [DHTd](https://github.com/mwarning/dhtd) Node instance
 
 ```
 dhtd --daemon --peer bttracker.debian.org:6881 --peer router.bittorrent.com:6881
 ```
 
-Query the node from DuckDB on the same node
+Query the DHTd node from DuckDB on the same host
+
 ```sql
 D SELECT dht_search('6f84758b0ddd8dc05840bf932a77935d8b5b8b93');
 ┌────────────────────────────────────────────────────────┐
