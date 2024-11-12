@@ -19,10 +19,10 @@
 
 namespace duckdb {
 
-static std::string GetDhtdSocketPath() {
-    const char* env_socket = std::getenv("DUCKDB_DHTD_SOCKET");
+static const char* GetDhtdSocketPath() {
+    static const char* env_socket = std::getenv("DUCKDB_DHTD_SOCKET");
     if (env_socket != nullptr && strlen(env_socket) > 0) {
-        return std::string(env_socket);
+        return env_socket;
     }
     return "/tmp/dhtd.sock";
 }
