@@ -8,7 +8,7 @@ This extension provides **DuckDB** instances access to mainline **DHT**.<br>
 
 ### Usage
 
-Start a local [DHTd](https://github.com/mwarning/dhtd) Node instance
+Start a local [DHTd]([https://github.com/mwarning/dhtd](https://github.com/lmangani/dhtd/releases/tag/v0.0.1)) node instance
 
 ```
 dhtd --daemon --peer bttracker.debian.org:6881 --peer router.bittorrent.com:6881
