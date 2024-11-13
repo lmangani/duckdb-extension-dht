@@ -37,3 +37,45 @@ D SELECT * FROM dht_results('6f84758b0ddd8dc05840bf932a77935d8b5b8b93');
 │ 2a00:ee2:802:5942::10:0                │  7588 │
 └────────────────────────────────────────┴───────┘
 ```
+
+
+## Vision
+```sql
+LOAD http_server; LOAD chsql; LOAD dht;
+
+--- Start an HTTP Socket (insecure)
+SELECT http_serve('0.0.0.0', 8123, ''); 
+
+--- Announce your Socket with your hash
+SELECT dht_announce('somesupersecrettokennobodyknowsabout', 8123);
+
+--- Check for Discovered Peers by hash
+SELECT dht_results('somesupersecrettokennobodyknowsabout');
+
+┌─────────────────┬───────┐
+│     address     │ port  │
+│     varchar     │ int32 │
+├─────────────────┼───────┤
+│ xxx.xx.xx.xxx   │  8123 │
+│ yyy.yyy.yy.yyy  │  8123 │
+├─────────────────┴───────┤
+│ 2 rows        2 columns │
+└─────────────────────────┘
+
+--- Create a VIEW for your results as backends
+CREATE OR REPLACE VIEW backends AS
+SELECT (address) as "who", ("http://" || address || ":" || port) AS "url",
+FROM dht_results('somesupersecrettokennobodyknowsabout');
+
+--- Query the Backends (TODO: authentication)
+SET variable __backends = (SELECT ARRAY_AGG(url) AS urls_array FROM backends);
+SELECT * FROM url_flock('SELECT ''hello'', version()', getvariable('__backends') );
+
+┌─────────┬─────────────┐
+│ 'hello' │ "version"() │
+│ varchar │   varchar   │
+├─────────┼─────────────┤
+│ hello   │ v1.1.2      │
+│ hello   │ 24.8.4.1    │
+└─────────┴─────────────┘
+```
