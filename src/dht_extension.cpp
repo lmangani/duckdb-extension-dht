@@ -177,7 +177,8 @@ static void DHTAnnounceFunction(DataChunk &args, ExpressionState &state, Vector 
         id_vector, result, args.size(),
         [&](string_t id) {
             std::string hash = ValidateOrHashInput(id.GetString());
-            auto port = ((int32_t*)port_vector.GetData())[0];
+            // auto port = ((int32_t*)port_vector.GetData())[0];
+            int32_t port = FlatVector::GetData<int32_t>(port_vector)[0];
             std::string command = "announce-start " + hash + ":" + std::to_string(port);
             return CommunicateWithDhtd(result, command);
         });
