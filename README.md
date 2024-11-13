@@ -14,7 +14,7 @@ Start a local [DHTd](https://github.com/lmangani/dhtd/releases/tag/v0.0.1) node 
 dhtd --daemon --peer bttracker.debian.org:6881 --peer router.bittorrent.com:6881
 ```
 
-Query the DHTd node from DuckDB on the same host
+Query the DHTd node from DuckDB running on the same host
 
 ```sql
 D SELECT dht_search('6f84758b0ddd8dc05840bf932a77935d8b5b8b93');
@@ -38,8 +38,22 @@ D SELECT * FROM dht_results('6f84758b0ddd8dc05840bf932a77935d8b5b8b93');
 └────────────────────────────────────────┴───────┘
 ```
 
+```sql
+D SELECT version, node_id, uptime FROM dht_status();
+┌─────────┬──────────────────────┬─────────┐
+│ version │       node_id        │ uptime  │
+│ varchar │       varchar        │ varchar │
+├─────────┼──────────────────────┼─────────┤
+│ 1.0.2   │ 552ba13e8034e1d3ec…  │ 1h1m    │
+├─────────┴──────────────────────┴─────────┤
+│ 1 rows              21 columns (3 shown) │
+└──────────────────────────────────────────┘
+```
+
 
 ## Vision
+This experiment is part of a Proof-of-Concept to distribute queries through functions _(without modifying the query planner)_
+
 ```sql
 --- Start an HTTP Socket (insecure) in the background
 SELECT http_serve('0.0.0.0', 8123, ''); 
