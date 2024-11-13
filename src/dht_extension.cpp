@@ -273,7 +273,7 @@ static void DhtResultsFunction(ClientContext &context, TableFunctionInput &data_
             throw std::runtime_error("Failed to send command: " + std::string(strerror(errno)));
         }
 
-        // Read and parse response
+        // Read response
         std::string response;
         char buffer[1024];
         while (true) {
@@ -283,33 +283,55 @@ static void DhtResultsFunction(ClientContext &context, TableFunctionInput &data_
         }
         close(sock);
 
-        // Parse results - format is [addr]:port or addr:port for each line
+        // Parse results line by line
         std::istringstream stream(response);
         std::string line;
-        std::regex pattern(R"((\[([^\]]+)\]|([^\]:]+ ))[:]([\d]+))");
-
         while (std::getline(stream, line)) {
-            if (line.empty()) continue;
+            // Remove any trailing whitespace/CR
+            while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t')) {
+                line.pop_back();
+            }
             
-            std::smatch matches;
-            if (std::regex_match(line, matches, pattern)) {
-                std::string addr = matches[2].matched ? matches[2].str() : matches[3].str();
-                uint16_t port = std::stoi(matches[4].str());
-                state.results.push_back({addr, port});
+            // Skip empty lines
+            if (line.empty()) {
+                continue;
+            }
+
+            // Find last colon for port separation
+            size_t colon_pos = line.find_last_of(':');
+            if (colon_pos == std::string::npos || colon_pos == 0 || colon_pos == line.length() - 1) {
+                continue;
+            }
+
+            // Split into address and port
+            std::string addr_part = line.substr(0, colon_pos);
+            std::string port_str = line.substr(colon_pos + 1);
+
+            // Simple port validation and conversion
+            try {
+                int port = std::stoi(port_str);
+                if (port <= 0 || port > 65535) continue;
+
+                // Store result
+                state.results.emplace_back(addr_part, static_cast<uint16_t>(port));
+            } catch (...) {
+                continue;
             }
         }
     }
 
-    // Output up to STANDARD_VECTOR_SIZE results
+    // Output results
     idx_t count = 0;
     auto addr_data = FlatVector::GetData<string_t>(output.data[0]);
     auto port_data = FlatVector::GetData<int32_t>(output.data[1]);
 
     while (state.position < state.results.size() && count < STANDARD_VECTOR_SIZE) {
         const auto& result = state.results[state.position];
-        addr_data[count] = StringVector::AddString(output.data[0], result.first);
-        port_data[count] = result.second;
-        count++;
+        if (!result.first.empty()) {  // Extra check to ensure no empty addresses
+            addr_data[count] = StringVector::AddString(output.data[0], result.first);
+            port_data[count] = result.second;
+            count++;
+        }
         state.position++;
     }
 
