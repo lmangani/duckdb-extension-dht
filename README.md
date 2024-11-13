@@ -10,9 +10,14 @@ This extension provides **DuckDB** instances access to mainline **DHT**.<br>
 
 Start a local [DHTd](https://github.com/lmangani/dhtd/releases/tag/v0.0.1) node instance
 
+#### DHTd
+DHTd serves as backend for this extension to operate across multiple DuckDB sessions
+
 ```
-dhtd --daemon --peer bttracker.debian.org:6881 --peer router.bittorrent.com:6881
+docker run -d --name dhtd -p 6881:6881 -v /tmp:/tmp ghcr.io/lmangani/dhtd:main
 ```
+
+#### DuckDB
 
 Query the DHTd node from DuckDB running on the same host
 
